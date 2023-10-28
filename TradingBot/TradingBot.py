@@ -10,24 +10,15 @@ import pandas as pd
 import unittest
 from data_fetching import start_websocket
 
-# Enhanced logging with exception details
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Sample log messages
-logging.info('Bot started.')
-logging.warning('This is a warning message.')
-logging.error('This is an error message.')
+# Update the second basicConfig to include console output
 logging.basicConfig(
-    level=logging.INFO, 
-    filename='trading_bot.log', 
-    filemode='a',
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('trading_bot.log', 'a'),
+        logging.StreamHandler()
+    ]
 )
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-logging.getLogger("").addHandler(console)
-
-
 
 # Function to prepare data for ChatGPT analysis
 def prepare_data_for_chatgpt(data):
