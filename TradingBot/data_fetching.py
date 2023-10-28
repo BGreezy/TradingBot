@@ -5,7 +5,8 @@ import json
 import openai
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s',filename='websocket_log_file.log')
+def configure_logging():
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s',filename='websocket_log_file.log')
 
 
 def fetch_data_from_api(api_function, max_retries=3, delay=1):
@@ -15,6 +16,7 @@ def fetch_data_from_api(api_function, max_retries=3, delay=1):
             data = api_function()
             return data
         except Exception as e:
+            logging.error(f"An error occurred: {e}. Retrying...")
             print(f"An error occurred: {e}. Retrying...")
             retries += 1
             time.sleep(delay)
@@ -52,40 +54,36 @@ def moving_average_crossover(short_window, long_window, price_data):
 
 openai.api_key = openai_api_key
 
-# Function to fetch available trading pairs
+def fetch_markets(exchange):
+    return exchange.load_markets()
 
-def select_symbols(exchange, num_pairs=5):
-    # Fetch available trading pairs
-    markets = exchange.load_markets()
+def sort_pairs_by_liquidity(markets, num=50):
     all_pairs = [symbol for symbol in markets.keys()]
-    
-    # Filter pairs based on liquidity
-    sorted_pairs = sorted(all_pairs, key=lambda x: markets[x]['quoteVolume'], reverse=True)[:50]
-    
-    # Collect historical data and calculate metrics
+    return sorted(all_pairs, key=lambda x: markets[x]['quoteVolume'], reverse=True)[:num]
+
+def calculate_metrics(exchange, sorted_pairs):
     metrics = {}
     for pair in sorted_pairs:
-        ohlcv = exchange.fetch_ohlcv(pair, '1m', limit=500)  # 1-minute bars, last 500 minutes
+        ohlcv = exchange.fetch_ohlcv(pair, '1m', limit=500)
         df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         
-        # Calculate volatility
         df['returns'] = df['close'].pct_change()
         volatility = df['returns'].std()
+        momentum = df['close'].diff(4)
         
-        # Calculate momentum
-        momentum = df['close'].diff(4)  # Rate of change over last 5 minutes
-        
-        # Aggregate metrics
         metrics[pair] = {'volatility': volatility, 'momentum': momentum[-1]}
-    
-    # Select pairs based on volatility and momentum
-    selected_pairs = sorted(metrics, key=lambda x: metrics[x]['volatility'] * metrics[x]['momentum'], reverse=True)[:num_pairs]
-    
+    return metrics
+
+def select_top_pairs(metrics, num_pairs=5):
+    return sorted(metrics, key=lambda x: metrics[x]['volatility'] * metrics[x]['momentum'], reverse=True)[:num_pairs]
+
+def select_symbols(exchange, num_pairs=5):
+    markets = fetch_markets(exchange)
+    sorted_pairs = sort_pairs_by_liquidity(markets)
+    metrics = calculate_metrics(exchange, sorted_pairs)
+    selected_pairs = select_top_pairs(metrics, num_pairs)
     return selected_pairs
 
-# Function to fetch real-time market data
-def fetch_market_data(symbol, timeframe):
-    return exchange.fetch_ohlcv(symbol, timeframe)
 
 # Websocket API for Real-time Data
 def on_message(ws, message):
