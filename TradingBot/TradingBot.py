@@ -1,17 +1,13 @@
 # High-Frequency Momentum Trading Bot with ChatGPT Integration
 import logging
-import ccxt
 import requests
 import smtplib
 from datetime import datetime
 import numpy as np
-import os
 import openai 
 import time
 import pandas as pd
-import json
 import unittest
-import websocket
 
 # Enhanced logging with exception details
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -31,84 +27,6 @@ console.setLevel(logging.INFO)
 logging.getLogger("").addHandler(console)
 
 
-def fetch_data_from_api(api_function, max_retries=3, delay=1):
-    retries = 0
-    while retries < max_retries:
-        try:
-            data = api_function()
-            return data
-        except Exception as e:
-            print(f"An error occurred: {e}. Retrying...")
-            retries += 1
-            time.sleep(delay)
-    raise Exception("Max retries reached. Could not fetch data.")
-    logging.error(f'Max retries reached. Exception details: {e}')
-
-# Initialize ccxt binance object
-exchange = ccxt.coinbasepro()
-
-# Your API Keys
-api_key = 'TradingBot'
-openai_api_key = os.getenv('OpenAISecret')
-
-# Configure API keys
-exchange.apiKey = api_key
-exchange.secret = os.getenv('TradingBotSecret')
-
-if not api_key or not openai_api_key:
-    logging.error("API keys are missing.")
-    exit(1)
-
-# TODO: Consider implementing Exponential Moving Averages (EMA) or machine learning models for more robust trading signals.
-# Implement a simple moving average crossover strategy
-def moving_average_crossover(short_window, long_window, price_data):
-    short_mavg = price_data.rolling(window=short_window).mean()
-    long_mavg = price_data.rolling(window=long_window).mean()
-
-    signal = 0.0
-    if short_mavg[-1] > long_mavg[-1]:
-        signal = 1.0  # Buy
-    elif short_mavg[-1] < long_mavg[-1]:
-        signal = -1.0  # Sell
-    
-    return signal
-
-openai.api_key = openai_api_key
-
-# Function to fetch available trading pairs
-
-def select_symbols(exchange, num_pairs=5):
-    # Fetch available trading pairs
-    markets = exchange.load_markets()
-    all_pairs = [symbol for symbol in markets.keys()]
-    
-    # Filter pairs based on liquidity
-    sorted_pairs = sorted(all_pairs, key=lambda x: markets[x]['quoteVolume'], reverse=True)[:50]
-    
-    # Collect historical data and calculate metrics
-    metrics = {}
-    for pair in sorted_pairs:
-        ohlcv = exchange.fetch_ohlcv(pair, '1m', limit=500)  # 1-minute bars, last 500 minutes
-        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        
-        # Calculate volatility
-        df['returns'] = df['close'].pct_change()
-        volatility = df['returns'].std()
-        
-        # Calculate momentum
-        momentum = df['close'].diff(4)  # Rate of change over last 5 minutes
-        
-        # Aggregate metrics
-        metrics[pair] = {'volatility': volatility, 'momentum': momentum[-1]}
-    
-    # Select pairs based on volatility and momentum
-    selected_pairs = sorted(metrics, key=lambda x: metrics[x]['volatility'] * metrics[x]['momentum'], reverse=True)[:num_pairs]
-    
-    return selected_pairs
-
-# Function to fetch real-time market data
-def fetch_market_data(symbol, timeframe):
-    return exchange.fetch_ohlcv(symbol, timeframe)
 
 # Function to prepare data for ChatGPT analysis
 def prepare_data_for_chatgpt(data):
@@ -166,11 +84,7 @@ if __name__ == '__main__':
         # Sleep for 1 minute before fetching new data
         time.sleep(60)
 
-# Performance Metrics: Implementing a simple Sharpe Ratio calculation
-def calculate_sharpe_ratio(returns, risk_free_rate=0.01):
-    excess_returns = returns - risk_free_rate
-    return excess_returns.mean() / excess_returns.std()
-    # TODO: Add more performance metrics like Drawdown, Beta, and Alpha
+
 
 # User Interface: Implementing a simple CLI-based user interface
 def start_bot():
@@ -211,21 +125,7 @@ api_key = os.getenv('BlockchainComKey')
 api_secret = os.getenv('BlockchainComSecret')
 
 # TODO: Optimize data parsing and storage for speed
-# Websocket API for Real-time Data
-def on_message(ws, message):
-    data = json.loads(message)
-    # Parse and store the real-time market data here for your high-frequency trading strategy
-    
-def on_error(ws, error):
-    print(f"Error: {error}")
 
-def on_close(ws, close_status_code, close_msg):
-    print("### Connection closed ###")
-
-def start_websocket():
-    ws_url = "wss://ws.prod.blockchain.info/"  # Replace with the actual Blockchain.com Websocket URL
-    ws = websocket.WebSocketApp(ws_url, on_message=on_message, on_error=on_error, on_close=on_close)
-    ws.run_forever()
 
 # Data Parsing and Storage
 # Global dictionary to store parsed market data
