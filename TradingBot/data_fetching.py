@@ -1,5 +1,7 @@
 import ccxt
 import os
+import websocket
+import json
 
 def fetch_data_from_api(api_function, max_retries=3, delay=1):
     retries = 0
@@ -79,3 +81,19 @@ def select_symbols(exchange, num_pairs=5):
 # Function to fetch real-time market data
 def fetch_market_data(symbol, timeframe):
     return exchange.fetch_ohlcv(symbol, timeframe)
+
+# Websocket API for Real-time Data
+def on_message(ws, message):
+    data = json.loads(message)
+    # Parse and store the real-time market data here for your high-frequency trading strategy
+    
+def on_error(ws, error):
+    print(f"Error: {error}")
+
+def on_close(ws, close_status_code, close_msg):
+    print("### Connection closed ###")
+
+def start_websocket():
+    ws_url = "wss://ws.prod.blockchain.info/"  # Replace with the actual Blockchain.com Websocket URL
+    ws = websocket.WebSocketApp(ws_url, on_message=on_message, on_error=on_error, on_close=on_close)
+    ws.run_forever()
