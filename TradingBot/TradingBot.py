@@ -66,6 +66,9 @@ def analyze_with_chatgpt(data, model="text-davinci-002"):
 
 # Main function
 if __name__ == '__main__':
+    # Start the Websocket connection for real-time data streaming
+    start_websocket()
+
     while True:
         # Select symbols
         symbols = select_symbols()
@@ -160,5 +163,3 @@ def parse_and_store_data(data):
 def execute_trade(signal):
     # Your logic for executing buy/sell orders through the Blockchain.com API
 
-# Start the Websocket connection for real-time data streaming
-start_websocket()
