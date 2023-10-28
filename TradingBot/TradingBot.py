@@ -8,6 +8,7 @@ import openai
 import time
 import pandas as pd
 import unittest
+from data_fetching import start_websocket
 
 # Enhanced logging with exception details
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
