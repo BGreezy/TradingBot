@@ -103,10 +103,18 @@ def on_close(ws, close_status_code, close_msg):
     print("### Connection closed ###")
 
 def start_websocket():
-    ws_url = "wss://ws.blockchain.info/inv"  # Replace with the actual Blockchain.com Websocket URL
+    ws_url = "wss://ws.blockchain.info/inv"
     ws = websocket.WebSocketApp(ws_url, on_message=on_message, on_error=on_error, on_close=on_close)
-    logging.info("Attempting to connect to WebSocket.")
-    print("Attempting to connect to WebSocket.")
+
+    def on_open(ws):
+        logging.info("WebSocket connection established.")
+        print("WebSocket connection established.")
+        
+        # Subscribe to unconfirmed transactions
+        sub_msg = json.dumps({"op": "unconfirmed_sub"})
+        ws.send(sub_msg)
+        logging.info(f"Sent subscription message: {sub_msg}")
+        print(f"Sent subscription message: {sub_msg}")
+
+    ws.on_open = on_open
     ws.run_forever()
-    logging.info("WebSocket connection closed.")
-    print("WebSocket connection closed.")
