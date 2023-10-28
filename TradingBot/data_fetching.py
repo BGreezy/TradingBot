@@ -3,6 +3,10 @@ import os
 import websocket
 import json
 import openai
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s',filename='websocket_log_file.log')
+
 
 def fetch_data_from_api(api_function, max_retries=3, delay=1):
     retries = 0
@@ -85,16 +89,24 @@ def fetch_market_data(symbol, timeframe):
 
 # Websocket API for Real-time Data
 def on_message(ws, message):
+    logging.info(f"Received message: {message}")
+    print(f"Received message: {message}")
     data = json.loads(message)
     # Parse and store the real-time market data here for your high-frequency trading strategy
     
 def on_error(ws, error):
+    logging.error(f"Error: {error}")
     print(f"Error: {error}")
 
 def on_close(ws, close_status_code, close_msg):
+    logging.info("WebSocket connection closed.")
     print("### Connection closed ###")
 
 def start_websocket():
-    ws_url = "wss://ws.prod.blockchain.info/"  # Replace with the actual Blockchain.com Websocket URL
+    ws_url = "wss://ws.blockchain.info/inv"  # Replace with the actual Blockchain.com Websocket URL
     ws = websocket.WebSocketApp(ws_url, on_message=on_message, on_error=on_error, on_close=on_close)
+    logging.info("Attempting to connect to WebSocket.")
+    print("Attempting to connect to WebSocket.")
     ws.run_forever()
+    logging.info("WebSocket connection closed.")
+    print("WebSocket connection closed.")
