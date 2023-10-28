@@ -9,6 +9,7 @@ import time
 import pandas as pd
 import unittest
 from data_fetching import start_websocket
+from data_fetching import select_symbols
 
 # Update the second basicConfig to include console output
 logging.basicConfig(

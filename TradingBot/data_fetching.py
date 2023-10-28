@@ -2,6 +2,7 @@ import ccxt
 import os
 import websocket
 import json
+import openai
 
 def fetch_data_from_api(api_function, max_retries=3, delay=1):
     retries = 0
