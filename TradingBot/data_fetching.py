@@ -100,9 +100,14 @@ def on_message(ws, message):
 def fetch_supported_pairs():
     url = "https://api.pro.coinbase.com/products"
     response = requests.get(url)
-    products = response.json()
-    supported_pairs = [product['id'] for product in products]
-    return supported_pairs
+    data = response.json()
+    return [item['id'] for item in data]
+
+# Fetch supported pairs from Coinbase API
+supported_pairs = fetch_supported_pairs()
+
+# Filter viable pairs
+filtered_pairs = [pair for pair in viable_pairs if pair in supported_pairs]
    
 def reconnect(ws):
     delay = 1  # initial delay in seconds

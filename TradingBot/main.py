@@ -1,7 +1,7 @@
 import ccxt
 import logging
 import threading
-from data_fetching import select_symbols, subscribe_to_websocket, start_websocket, keep_alive, filter_viable_pairs
+from data_fetching import select_symbols, subscribe_to_websocket, start_websocket, keep_alive, fetch_supported_pairs, filter_viable_pairs
 # TODO: Uncomment this line when the trading strategy function is implemented
 #from trading_strategies import your_trading_strategy_function
 from performance_metrics import calculate_sharpe_ratio, calculate_roi
@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     #Get Pairs
     logging.info("Fetching viable pairs.")
-    viable_pairs = get_viable_pairs(exchange)
+    viable_pairs = fetch_supported_pairs()
     filtered_pairs = filter_viable_pairs(viable_pairs)
 
     # Initialize websocket
