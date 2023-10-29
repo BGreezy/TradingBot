@@ -74,18 +74,36 @@ def on_message(ws, message):
     #if data['type'] == 'trade':
     #    process_trade(data)
     # Parse and store the real-time market data here for your high-frequency trading strategy
-    
+   
+def reconnect(ws):
+    initial_delay = 1  # in seconds
+    max_delay = 16  # in seconds
+    delay = initial_delay
+
+    while True:
+        try:
+            ws.run_forever()
+            break  # Successfully connected, break the loop
+        except Exception as e:
+            logging.error(f"Failed to reconnect: {e}")
+            time.sleep(delay)
+            delay = min(delay * 2, max_delay)
+
 def on_error(ws, error):
     logging.error(f"Error: {error}")
     print(f"Error: {error}")
 
 def on_close(ws, close_status_code, close_msg):
     logging.info("WebSocket connection closed.")
-    print("### Connection closed ###")
+    logging.error(f"WebSocket closed with code: {close_status_code}, message: {close_msg}")
+    print("### Connection closed, message: {close_msg} ###")
 
 def subscribe_to_websocket(ws, pairs):
     for pair in pairs:
-        ws.send(json.dumps({"type": "subscribe", "symbol": pair}))
+        if ws.sock and ws.sock.connected:
+            ws.send(json.dumps({"type": "subscribe", "symbol": pair}))
+        else:
+            logging.error("WebSocket connection is closed.")
 
 def start_websocket():
     ws_url = "wss://ws.blockchain.info/inv"
