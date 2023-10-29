@@ -50,7 +50,16 @@ def select_top_pairs(metrics, num_pairs=5):
 def select_symbols(exchange, num_pairs=5):
     markets = fetch_markets(exchange)
     sorted_pairs = sort_pairs_by_liquidity(markets)
-    metrics = calculate_metrics(exchange, sorted_pairs)
+    
+    # Fetch historical data and calculate metrics
+    metrics = {}
+    for pair in sorted_pairs:
+        ohlcv = exchange.fetch_ohlcv(pair, '1m', limit=500)  # 1-minute bars, last 500 minutes
+        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+    
+        # Corrected function call
+        metrics[pair] = calculate_metrics(df)
+
     selected_pairs = select_top_pairs(metrics, num_pairs)
     logging.info(f"Selected pairs based on advanced metrics: {selected_pairs}")
     return selected_pairs
