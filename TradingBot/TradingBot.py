@@ -21,40 +21,7 @@ logging.basicConfig(
     ]
 )
 
-# Function to prepare data for ChatGPT analysis
-def prepare_data_for_chatgpt(data):
-    # Convert the data into a JSON string
-    data_str = json.dumps(data)
-    return data_str
 
-# Function to analyze data with ChatGPT
-def analyze_with_chatgpt(data, model="text-davinci-002"):
-    # Validate the data
-    if not data or not isinstance(data, dict):
-        return "Invalid data format"
-    
-    # Prepare the data
-    prepared_data = prepare_data_for_chatgpt(data)
-    
-    # Create specific questions for high-frequency momentum trading
-    specific_question = f"What are the buy/sell signals based on the current momentum indicators in this market data: {prepared_data}?"
-    
-    # Create a conversation with ChatGPT
-    try:
-        conversation = openai.ChatCompletion.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "You are a financial analysis expert specialized in high-frequency momentum trading."},
-                {"role": "user", "content": specific_question},
-                {"role": "assistant", "content": "Analyzing the data..."}
-            ]
-        )
-    except Exception as e:
-        return f"Error in ChatGPT interaction: {e}"
-    
-    # Extract and return the assistant's reply
-    assistant_reply = conversation['choices'][0]['message']['content']
-    return assistant_reply
 
 # Main function
 if __name__ == '__main__':
@@ -123,29 +90,3 @@ api_secret = os.getenv('BlockchainComSecret')
 # TODO: Optimize data parsing and storage for speed
 
 
-# Data Parsing and Storage
-# Global dictionary to store parsed market data
-parsed_market_data = {}
-
-def parse_and_store_data(data):
-    global parsed_market_data
-    
-    # Extract relevant fields (Assuming data is a dictionary)
-    if 'symbol' in data and 'price' in data and 'volume' in data:
-        symbol = data['symbol']
-        price = float(data['price'])
-        volume = float(data['volume'])
-        
-        # Calculate momentum (price change per unit volume)
-        if symbol in parsed_market_data:
-            previous_price = parsed_market_data[symbol]['price']
-            previous_volume = parsed_market_data[symbol]['volume']
-            momentum = (price - previous_price) / (volume - previous_volume)
-        else:
-            momentum = 0  # Initialize with zero for the first data point
-        
-        # Store the parsed data
-        parsed_market_data[symbol] = {'price': price, 'volume': volume, 'momentum': momentum}
-
-    else:
-        print("Data missing relevant fields, could not parse.")
