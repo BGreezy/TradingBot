@@ -100,8 +100,8 @@ def start_websocket():
 
         # Subscribe to the selected pairs
         subscribe_to_websocket(ws, selected_pairs)
-        logging.info(f"Sent subscription message: {sub_msg}")
-        print(f"Sent subscription message: {sub_msg}")
+        logging.info(f"Sent subscription message for pairs: {selected_pairs}")
+        print(f"Sent subscription message for pairs: {selected_pairs}")
 
     ws.on_open = on_open
     ws.run_forever()
