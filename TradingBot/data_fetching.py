@@ -4,6 +4,7 @@ import websocket
 import json
 import openai
 import logging
+import pandas as pd
 
 def configure_logging():
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s',filename='websocket_log_file.log')
@@ -45,7 +46,7 @@ def calculate_metrics(df):
     return {'volatility': volatility, 'sharpe_ratio': sharpe_ratio}
 
 def select_top_pairs(metrics, num_pairs=5):
-    return sorted(metrics, key=lambda x: metrics[x]['volatility'] * metrics[x]['momentum'], reverse=True)[:num_pairs]
+    return sorted(metrics, key=lambda x: metrics[x].get('volatility', 0) * metrics[x].get('momentum', 0), reverse=True)[:num_pairs]
 
 def select_symbols(exchange, num_pairs=5):
     markets = fetch_markets(exchange)
