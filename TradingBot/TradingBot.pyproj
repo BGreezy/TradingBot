@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>cb32c392-3cc1-4a57-afb4-b2cfdb4ea000</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>TradingBot.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,9 +24,10 @@
   <ItemGroup>
     <Compile Include="data_fetching.py" />
     <Compile Include="execute_trades.py" />
+    <Compile Include="gpt_strategy_review.py" />
     <Compile Include="main.py" />
+    <Compile Include="parse_data.py" />
     <Compile Include="performance_metrics.py" />
-    <Compile Include="TradingBot.py" />
     <Compile Include="trading_strategies.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
