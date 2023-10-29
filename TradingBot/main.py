@@ -22,6 +22,7 @@ if __name__ == "__main__":
     #Get Pairs
     logging.info("Fetching viable pairs.")
     viable_pairs = select_symbols(exchange)
+    filtered_pairs = filter_viable_pairs(viable_pairs)
 
     # Initialize websocket
     logging.info("Initializing WebSocket.")
@@ -35,7 +36,7 @@ if __name__ == "__main__":
     # Subscribe to viable pairs
     if ws.sock and ws.sock.connected:
         logging.info("Subscribing to viable pairs.")
-        subscribe_to_websocket(ws, viable_pairs)
+        subscribe_to_websocket(ws, filtered_pairs)
     else:
         logging.error("WebSocket connection is closed.")
 

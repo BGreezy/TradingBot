@@ -72,6 +72,17 @@ def select_symbols(exchange, num_pairs=5):
     logging.info(f"Selected pairs based on advanced metrics: {selected_pairs}")
     return selected_pairs
 
+def fetch_supported_pairs():
+    url = "https://api.pro.coinbase.com/products"
+    response = requests.get(url)
+    if response.status_code == 200:
+        products = response.json()
+        supported_pairs = [product['id'] for product in products]
+        return supported_pairs
+    else:
+        logging.error(f"Failed to fetch supported pairs. Status code: {response.status_code}")
+        return []
+
 
 # Websocket API for Real-time Data
 
