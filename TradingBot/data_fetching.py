@@ -103,6 +103,10 @@ def on_close(ws, close_status_code, close_msg):
     logging.info("WebSocket connection closed.")
     print("### Connection closed ###")
 
+def subscribe_to_websocket(ws, pairs):
+    for pair in pairs:
+        ws.send(json.dumps({"type": "subscribe", "symbol": pair}))
+
 def start_websocket():
     ws_url = "wss://ws.blockchain.info/inv"
     ws = websocket.WebSocketApp(ws_url, on_message=on_message, on_error=on_error, on_close=on_close)
