@@ -91,8 +91,8 @@ def on_message(ws, message):
     logging.info(f"Received message: {message}")
     print(f"Received message: {message}")
     data = json.loads(message)
-    if data['type'] == 'trade':
-        process_trade(data)
+    #if data['type'] == 'trade':
+    #    process_trade(data)
     # Parse and store the real-time market data here for your high-frequency trading strategy
     
 def on_error(ws, error):
