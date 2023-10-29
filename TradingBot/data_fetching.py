@@ -52,8 +52,7 @@ def select_top_pairs(metrics, num_pairs=5):
 
 def filter_viable_pairs(viable_pairs):
     supported_pairs = fetch_supported_pairs()
-    filtered_pairs = [pair for pair in viable_pairs if pair in supported_pairs]
-    return filtered_pairs
+    return [pair for pair in viable_pairs if pair in supported_pairs]
 
 def select_symbols(exchange, num_pairs=5):
     markets = fetch_markets(exchange)
@@ -97,16 +96,13 @@ def on_message(ws, message):
     # Parse and store the real-time market data here for your high-frequency trading strategy
 
 
+
 def fetch_supported_pairs():
     url = "https://api.pro.coinbase.com/products"
     response = requests.get(url)
-    if response.status_code == 200:
-        products = response.json()
-        supported_pairs = [product['id'] for product in products]
-        return supported_pairs
-    else:
-        print(f"Failed to fetch supported pairs. Status code: {response.status_code}")
-        return []
+    products = response.json()
+    supported_pairs = [product['id'] for product in products]
+    return supported_pairs
    
 def reconnect(ws):
     delay = 1  # initial delay in seconds
@@ -144,11 +140,15 @@ def keep_alive(ws):
 
 def subscribe_to_websocket(ws, pairs):
     for pair in pairs:
-        if ws.sock and ws.sock.connected:
-            ws.send(json.dumps({"type": "subscribe", "symbol": pair}))
-            logging.info(f"Subscribed to {pair}.")
-        else:
-            logging.error("WebSocket connection is closed.")
+        subscription_message = {
+            "type": "subscribe",
+            "channels": [{"name": "ticker", "product_ids": [pair]}]
+        }
+        try:
+            ws.send(json.dumps(subscription_message))
+        except Exception as e:
+            logging.error(f"Failed to subscribe to {pair}: {e}")
+        
 
 def start_websocket():
     ws_url = "wss://ws-feed.exchange.coinbase.com"
