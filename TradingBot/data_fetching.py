@@ -6,6 +6,10 @@ import openai
 import logging
 import pandas as pd
 import time
+import requests
+from ratelimit import limits, sleep_and_retry
+
+
 
 # Initialize ccxt binance object
 exchange = ccxt.coinbasepro()
@@ -46,6 +50,11 @@ def calculate_metrics(df):
 def select_top_pairs(metrics, num_pairs=5):
     return sorted(metrics, key=lambda x: metrics[x].get('volatility', 0) * metrics[x].get('momentum', 0), reverse=True)[:num_pairs]
 
+def filter_viable_pairs(viable_pairs):
+    supported_pairs = fetch_supported_pairs()
+    filtered_pairs = [pair for pair in viable_pairs if pair in supported_pairs]
+    return filtered_pairs
+
 def select_symbols(exchange, num_pairs=5):
     markets = fetch_markets(exchange)
     sorted_pairs = sort_pairs_by_liquidity(markets)
@@ -65,6 +74,9 @@ def select_symbols(exchange, num_pairs=5):
 
 
 # Websocket API for Real-time Data
+
+@sleep_and_retry
+@limits(calls=10, period=1)  # 10 calls per second
 def on_message(ws, message):
     logging.info(f"Received message: {message}")
     print(f"Received message: {message}")
@@ -72,15 +84,27 @@ def on_message(ws, message):
     #if data['type'] == 'trade':
     #    process_trade(data)
     # Parse and store the real-time market data here for your high-frequency trading strategy
+
+
+def fetch_supported_pairs():
+    url = "https://api.pro.coinbase.com/products"
+    response = requests.get(url)
+    if response.status_code == 200:
+        products = response.json()
+        supported_pairs = [product['id'] for product in products]
+        return supported_pairs
+    else:
+        print(f"Failed to fetch supported pairs. Status code: {response.status_code}")
+        return []
    
 def reconnect(ws):
-    # ... existing code
+    delay = 1  # initial delay in seconds
+    max_delay = 60  # max delay in seconds
     while True:
         try:
-            # ... existing code
             ws.run_forever()
             logging.info("Reconnected successfully.")
-            break  # Successfully connected, break the loop
+            break
         except Exception as e:
             logging.error(f"Failed to reconnect: {e}")
             time.sleep(delay)
