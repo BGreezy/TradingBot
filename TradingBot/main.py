@@ -14,15 +14,25 @@ if __name__ == "__main__":
         format='%(asctime)s - %(levelname)s - %(message)s'  # Log format
     )
     # Initialize exchange
+    logging.info("Initializing exchange.")
     exchange = ccxt.binance()
 
     #Get Pairs
+    logging.info("Fetching viable pairs.")
     viable_pairs = select_symbols(exchange)
 
     # Initialize websocket
-    ws = start_websocket()
+    logging.info("Initializing WebSocket.")
+    try:
+        ws = start_websocket()
+    except Exception as e:
+        logging.error(f"WebSocket initialization failed: {e}")
 
     # Subscribe to viable pairs
-    subscribe_to_websocket(ws, viable_pairs)
+    if ws.sock and ws.sock.connected:
+        logging.info("Subscribing to viable pairs.")
+        subscribe_to_websocket(ws, viable_pairs)
+    else:
+        logging.error("WebSocket connection is closed.")
 
     # Start trading bot

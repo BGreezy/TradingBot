@@ -88,19 +88,30 @@ def reconnect(ws):
             delay = min(delay * 2, max_delay)
 
 def on_error(ws, error):
-    logging.error(f"Error: {error}")
+    logging.error(f"WebSocket Error: {error}")
     print(f"Error: {error}")
-    reconnect(ws)
 
 def on_close(ws, close_status_code, close_msg):
     logging.info("WebSocket connection closed.")
     logging.error(f"WebSocket closed with code: {close_status_code}, message: {close_msg}")
     print("### Connection closed, message: {close_msg} ###")
+    ws.close()
+    reconnect(ws)
+
+def keep_alive(ws):
+    while True:
+        if ws.sock and ws.sock.connected:
+            ws.send("ping")
+            time.sleep(10)  # send a ping every 10 seconds
+        else:
+            logging.error("WebSocket connection is closed.")
+            break
 
 def subscribe_to_websocket(ws, pairs):
     for pair in pairs:
         if ws.sock and ws.sock.connected:
             ws.send(json.dumps({"type": "subscribe", "symbol": pair}))
+            logging.info(f"Subscribed to {pair}.")
         else:
             logging.error("WebSocket connection is closed.")
 
@@ -120,5 +131,7 @@ def start_websocket():
         logging.info(f"Sent subscription message for pairs: {selected_pairs}")
         print(f"Sent subscription message for pairs: {selected_pairs}")
     ws.on_open = on_open
+    logging.info("Attempting to start WebSocket.")
     ws.run_forever()
+    logging.info("WebSocket has stopped running.")
     return ws
