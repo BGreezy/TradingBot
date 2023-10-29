@@ -8,22 +8,6 @@ import logging
 def configure_logging():
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s',filename='websocket_log_file.log')
 
-
-def fetch_data_from_api(api_function, max_retries=3, delay=1):
-    retries = 0
-    while retries < max_retries:
-        try:
-            data = api_function()
-            return data
-        except Exception as e:
-            logging.error(f"An error occurred: {e}. Retrying...")
-            print(f"An error occurred: {e}. Retrying...")
-            retries += 1
-            time.sleep(delay)
-    logging.error(f'Max retries reached. Exception details: {e}')
-    raise Exception("Max retries reached. Could not fetch data.")
-
-
 # Initialize ccxt binance object
 exchange = ccxt.coinbasepro()
 
@@ -40,18 +24,6 @@ if not api_key or not openai_api_key:
     exit(1)
 
 # TODO: Consider implementing Exponential Moving Averages (EMA) or machine learning models for more robust trading signals.
-# Implement a simple moving average crossover strategy
-def moving_average_crossover(short_window, long_window, price_data):
-    short_mavg = price_data.rolling(window=short_window).mean()
-    long_mavg = price_data.rolling(window=long_window).mean()
-
-    signal = 0.0
-    if short_mavg[-1] > long_mavg[-1]:
-        signal = 1.0  # Buy
-    elif short_mavg[-1] < long_mavg[-1]:
-        signal = -1.0  # Sell
-    
-    return signal
 
 openai.api_key = openai_api_key
 
@@ -60,20 +32,17 @@ def fetch_markets(exchange):
 
 def sort_pairs_by_liquidity(markets, num=50):
     all_pairs = [symbol for symbol in markets.keys()]
-    return sorted(all_pairs, key=lambda x: markets[x]['quoteVolume'], reverse=True)[:num]
+    return sorted(all_pairs, key=lambda x: markets[x].get('quoteVolume', 0), reverse=True)[:num]
 
-def calculate_metrics(exchange, sorted_pairs):
-    metrics = {}
-    for pair in sorted_pairs:
-        ohlcv = exchange.fetch_ohlcv(pair, '1m', limit=500)
-        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        
-        df['returns'] = df['close'].pct_change()
-        volatility = df['returns'].std()
-        momentum = df['close'].diff(4)
-        
-        metrics[pair] = {'volatility': volatility, 'momentum': momentum[-1]}
-    return metrics
+def calculate_metrics(df):
+    # Calculate volatility
+    df['returns'] = df['close'].pct_change()
+    volatility = df['returns'].std()
+    
+    # Calculate Sharpe ratio (assuming risk-free rate is 0)
+    sharpe_ratio = df['returns'].mean() / df['returns'].std()
+    
+    return {'volatility': volatility, 'sharpe_ratio': sharpe_ratio}
 
 def select_top_pairs(metrics, num_pairs=5):
     return sorted(metrics, key=lambda x: metrics[x]['volatility'] * metrics[x]['momentum'], reverse=True)[:num_pairs]
@@ -83,6 +52,7 @@ def select_symbols(exchange, num_pairs=5):
     sorted_pairs = sort_pairs_by_liquidity(markets)
     metrics = calculate_metrics(exchange, sorted_pairs)
     selected_pairs = select_top_pairs(metrics, num_pairs)
+    logging.info(f"Selected pairs based on advanced metrics: {selected_pairs}")
     return selected_pairs
 
 
@@ -115,9 +85,11 @@ def start_websocket():
         logging.info("WebSocket connection established.")
         print("WebSocket connection established.")
         
-        # Subscribe to unconfirmed transactions
-        sub_msg = json.dumps({"op": "unconfirmed_sub"})
-        ws.send(sub_msg)
+        # Get the top trading pairs
+        selected_pairs = select_symbols(exchange)
+
+        # Subscribe to the selected pairs
+        subscribe_to_websocket(ws, selected_pairs)
         logging.info(f"Sent subscription message: {sub_msg}")
         print(f"Sent subscription message: {sub_msg}")
 
