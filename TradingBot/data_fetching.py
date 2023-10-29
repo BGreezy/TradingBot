@@ -5,6 +5,7 @@ import json
 import openai
 import logging
 import pandas as pd
+import time
 
 # Initialize ccxt binance object
 exchange = ccxt.coinbasepro()
