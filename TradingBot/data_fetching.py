@@ -6,9 +6,6 @@ import openai
 import logging
 import pandas as pd
 
-def configure_logging():
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s',filename='websocket_log_file.log')
-
 # Initialize ccxt binance object
 exchange = ccxt.coinbasepro()
 
@@ -92,6 +89,7 @@ def reconnect(ws):
 def on_error(ws, error):
     logging.error(f"Error: {error}")
     print(f"Error: {error}")
+    reconnect(ws)
 
 def on_close(ws, close_status_code, close_msg):
     logging.info("WebSocket connection closed.")
