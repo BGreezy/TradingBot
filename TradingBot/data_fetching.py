@@ -20,8 +20,9 @@ def fetch_data_from_api(api_function, max_retries=3, delay=1):
             print(f"An error occurred: {e}. Retrying...")
             retries += 1
             time.sleep(delay)
-    raise Exception("Max retries reached. Could not fetch data.")
     logging.error(f'Max retries reached. Exception details: {e}')
+    raise Exception("Max retries reached. Could not fetch data.")
+
 
 # Initialize ccxt binance object
 exchange = ccxt.coinbasepro()
@@ -90,6 +91,8 @@ def on_message(ws, message):
     logging.info(f"Received message: {message}")
     print(f"Received message: {message}")
     data = json.loads(message)
+    if data['type'] == 'trade':
+        process_trade(data)
     # Parse and store the real-time market data here for your high-frequency trading strategy
     
 def on_error(ws, error):

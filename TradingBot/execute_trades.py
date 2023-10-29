@@ -1,3 +1,5 @@
-# Trading Execution
-def execute_trade(signal):
-    # Your logic for executing buy/sell orders through the Blockchain.com API
+def execute_trade(signal, symbol, quantity):
+    if signal == 'buy':
+        # Execute buy order
+    elif signal == 'sell':
+        # Execute sell order
