@@ -74,13 +74,12 @@ def on_message(ws, message):
     # Parse and store the real-time market data here for your high-frequency trading strategy
    
 def reconnect(ws):
-    initial_delay = 1  # in seconds
-    max_delay = 16  # in seconds
-    delay = initial_delay
-
+    # ... existing code
     while True:
         try:
+            # ... existing code
             ws.run_forever()
+            logging.info("Reconnected successfully.")
             break  # Successfully connected, break the loop
         except Exception as e:
             logging.error(f"Failed to reconnect: {e}")
@@ -103,6 +102,7 @@ def keep_alive(ws):
         if ws.sock and ws.sock.connected:
             ws.send("ping")
             time.sleep(10)  # send a ping every 10 seconds
+            logging.info("Sent keep-alive ping.")
         else:
             logging.error("WebSocket connection is closed.")
             break
@@ -116,7 +116,7 @@ def subscribe_to_websocket(ws, pairs):
             logging.error("WebSocket connection is closed.")
 
 def start_websocket():
-    ws_url = "wss://ws.blockchain.info/inv"
+    ws_url = "wss://ws-feed.exchange.coinbase.com"
     ws = websocket.WebSocketApp(ws_url, on_message=on_message, on_error=on_error, on_close=on_close)
 
     def on_open(ws):

@@ -1,9 +1,11 @@
 import ccxt
 import logging
-from data_fetching import select_symbols, subscribe_to_websocket, start_websocket
+import threading
+from data_fetching import select_symbols, subscribe_to_websocket, start_websocket, keep_alive
 # TODO: Uncomment this line when the trading strategy function is implemented
 #from trading_strategies import your_trading_strategy_function
 from performance_metrics import calculate_sharpe_ratio, calculate_roi
+
 
 if __name__ == "__main__":
     # Start logging
@@ -25,6 +27,8 @@ if __name__ == "__main__":
     logging.info("Initializing WebSocket.")
     try:
         ws = start_websocket()
+        # Start the keep_alive function in a new thread
+        threading.Thread(target=keep_alive, args=(ws,)).start()
     except Exception as e:
         logging.error(f"WebSocket initialization failed: {e}")
 
