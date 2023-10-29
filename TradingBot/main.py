@@ -22,6 +22,7 @@ if __name__ == "__main__":
     #Get Pairs
     logging.info("Fetching viable pairs.")
     viable_pairs = fetch_supported_pairs()
+    supported_pairs = fetch_supported_pairs()
     filtered_pairs = filter_viable_pairs(viable_pairs)
 
     # Initialize websocket
