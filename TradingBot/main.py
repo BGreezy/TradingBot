@@ -1,5 +1,5 @@
 import ccxt
-from data_fetching import select_symbols, start_websocket
+from data_fetching import select_symbols, subscribe_to_websocket, start_websocket
 # TODO: Uncomment this line when the trading strategy function is implemented
 #from trading_strategies import your_trading_strategy_function
 from performance_metrics import calculate_sharpe_ratio, calculate_roi
